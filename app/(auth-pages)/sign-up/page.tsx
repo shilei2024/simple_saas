@@ -42,9 +42,9 @@ export default async function SignUp(props: {
   return (
     <>
       <div className="flex flex-col space-y-2 text-center">
-        <h1 className="text-2xl font-semibold tracking-tight">Create your account</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">Meet your pen pal</h1>
         <p className="text-sm text-muted-foreground">
-          Sign up to access global authentication and payment solutions
+          Create an account and write your first letter — it's free
         </p>
       </div>
       <div className="grid gap-6">

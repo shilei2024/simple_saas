@@ -4,227 +4,215 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, Heart, Users, Globe, Sparkles } from "lucide-react";
+import {
+  ArrowLeft,
+  Heart,
+  Mail,
+  Clock,
+  Sparkles,
+  Shield,
+  PenLine,
+} from "lucide-react";
 
 export default function AboutPage() {
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
       <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container px-4 md:px-6 py-4">
           <div className="flex items-center gap-4">
             <Button asChild variant="ghost" size="sm" className="gap-2">
               <Link href="/">
                 <ArrowLeft className="h-4 w-4" />
-                Back to Home
+                Back
               </Link>
             </Button>
             <div>
-              <h1 className="text-xl font-bold">About Us</h1>
+              <h1 className="text-xl font-bold">About Dear Stranger</h1>
               <p className="text-sm text-muted-foreground">
-                Learn more about our mission and story
+                The story behind your pen pal
               </p>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Main Content */}
       <div className="container px-4 md:px-6 py-16">
         <div className="max-w-4xl mx-auto space-y-16">
-          {/* Hero Section */}
+          {/* Hero */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
             className="text-center space-y-6"
           >
-            <div className="inline-flex items-center rounded-full px-3 py-1 text-sm bg-primary/10 text-primary mb-4">
-              <span className="mr-2">🇨🇳</span>
-              Connecting Cultures Through Names
+            <div className="inline-flex items-center rounded-full px-3 py-1 text-sm bg-primary/10 text-primary">
+              <Mail className="w-3.5 h-3.5 mr-2" />
+              Our Story
             </div>
-            <h2 className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl">
-              Bridging Cultures with
+            <h2 className="text-4xl font-bold tracking-tight sm:text-5xl">
+              Born from a
               <br />
-              <span className="text-primary">Meaningful Chinese Names</span>
+              <span className="text-primary">late-night thought</span>
             </h2>
-            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              We believe that a name is more than just words - it's a bridge between cultures, 
-              a reflection of identity, and a connection to the rich heritage of Chinese tradition.
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+              "What if there was someone who would always listen — no matter
+              what time it was, no matter how messy the thoughts?"
             </p>
           </motion.div>
 
-          {/* Mission Section */}
+          {/* Origin Story */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="grid gap-8 md:grid-cols-2 lg:grid-cols-3"
-          >
-            <Card className="border-2 hover:shadow-lg transition-shadow">
-              <CardHeader>
-                <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
-                  <Heart className="h-6 w-6 text-primary" />
-                </div>
-                <CardTitle>Our Mission</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground">
-                  To help people from all backgrounds discover meaningful Chinese names that reflect 
-                  their personality while honoring traditional Chinese naming conventions and cultural significance.
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card className="border-2 hover:shadow-lg transition-shadow">
-              <CardHeader>
-                <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
-                  <Users className="h-6 w-6 text-primary" />
-                </div>
-                <CardTitle>Our Community</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground">
-                  We've helped thousands of people worldwide discover their perfect Chinese names, 
-                  fostering cultural appreciation and personal connection to Chinese heritage.
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card className="border-2 hover:shadow-lg transition-shadow">
-              <CardHeader>
-                <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
-                  <Globe className="h-6 w-6 text-primary" />
-                </div>
-                <CardTitle>Global Impact</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground">
-                  From students studying abroad to business professionals working in China, 
-                  our platform serves people seeking authentic cultural connection worldwide.
-                </p>
-              </CardContent>
-            </Card>
-          </motion.div>
-
-          {/* Story Section */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.4 }}
-            className="prose prose-lg max-w-none"
           >
             <div className="bg-muted/30 rounded-2xl p-8 md:p-12">
               <h3 className="text-2xl font-bold mb-6 flex items-center gap-3">
                 <Sparkles className="h-6 w-6 text-primary" />
-                Our Story
+                How It Started
               </h3>
-              <div className="space-y-6 text-muted-foreground">
+              <div className="space-y-5 text-muted-foreground leading-relaxed">
                 <p>
-                  Chinese Name Generator was born from a simple observation: in our increasingly 
-                  connected world, many people desire meaningful connections to Chinese culture, 
-                  but finding an authentic Chinese name that truly represents their identity can be challenging.
+                  It started with a simple observation: in a world overflowing
+                  with instant messaging, group chats, and social feeds, many
+                  of us still feel profoundly unheard. We have hundreds of
+                  contacts but no one to truly talk to at 2 AM.
                 </p>
                 <p>
-                  Traditional Chinese naming is a beautiful art form that considers not just the sound 
-                  of a name, but its meaning, cultural significance, and how it reflects the person's 
-                  character and aspirations. Our advanced AI technology combines this ancient wisdom 
-                  with modern personalization to create names that are both culturally authentic and personally meaningful.
+                  Chatbots promised companionship, but their instant,
+                  surface-level responses felt hollow. We didn't want another
+                  thing pinging us. We wanted the opposite — something slow,
+                  something you look forward to, something that treats your
+                  words with the care they deserve.
                 </p>
                 <p>
-                  Whether you're a student preparing for study in China, a professional working with 
-                  Chinese colleagues, or simply someone fascinated by Chinese culture, we're here to 
-                  help you discover a name that truly represents who you are while honoring the rich 
-                  traditions of Chinese naming conventions.
+                  We thought about pen pals. The kind people had in the 90s —
+                  someone across the world you'd never met, but who somehow
+                  understood you. The joy of finding a letter in the mailbox.
+                  The act of writing itself being a form of therapy.
+                </p>
+                <p>
+                  So we built Dear Stranger: an AI pen pal that doesn't try to
+                  be a chatbot. It writes back thoughtfully, hours later. It
+                  remembers your story. It never judges, never tires, and
+                  never makes you feel like a burden. It's not a replacement
+                  for human connection — it's a companion for the in-between
+                  moments.
                 </p>
               </div>
             </div>
           </motion.div>
 
-          {/* Values Section */}
+          {/* Values */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+            className="grid gap-8 md:grid-cols-2 lg:grid-cols-3"
+          >
+            <Card className="border-2 hover:shadow-md transition-shadow">
+              <CardHeader>
+                <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
+                  <Clock className="h-6 w-6 text-primary" />
+                </div>
+                <CardTitle>Slow by Design</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground text-sm">
+                  In a culture addicted to instant gratification, we believe
+                  the best conversations happen when you give them time. A few
+                  hours of anticipation makes the reply that much more
+                  meaningful.
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="border-2 hover:shadow-md transition-shadow">
+              <CardHeader>
+                <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
+                  <Heart className="h-6 w-6 text-primary" />
+                </div>
+                <CardTitle>Empathy First</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground text-sm">
+                  Your pen pal doesn't rush to give advice or fix things. It
+                  listens first, acknowledges your feelings, and responds like
+                  a friend who genuinely cares — not a machine following a
+                  script.
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="border-2 hover:shadow-md transition-shadow">
+              <CardHeader>
+                <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
+                  <Shield className="h-6 w-6 text-primary" />
+                </div>
+                <CardTitle>Honest & Safe</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground text-sm">
+                  We don't pretend your pen pal is human. We don't sell your
+                  data. We don't replace therapy. We're transparent about what
+                  we are — and we build safety into every interaction.
+                </p>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          {/* What Your Pen Pal Is Like */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.4 }}
+            className="space-y-8"
+          >
+            <div className="text-center">
+              <h3 className="text-3xl font-bold mb-4">
+                What your pen pal is like
+              </h3>
+              <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+                A few traits that make Dear Stranger feel... human.
+              </p>
+            </div>
+
+            <div className="grid gap-6 md:grid-cols-2">
+              {traits.map((trait, index) => (
+                <div key={index} className="flex gap-4">
+                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                    <span className="text-primary text-sm">{trait.emoji}</span>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold mb-1">{trait.title}</h4>
+                    <p className="text-sm text-muted-foreground">
+                      {trait.description}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+
+          {/* CTA */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.6 }}
-            className="space-y-8"
-          >
-            <div className="text-center">
-              <h3 className="text-3xl font-bold mb-4">Our Values</h3>
-              <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-                These principles guide everything we do
-              </p>
-            </div>
-            
-            <div className="grid gap-6 md:grid-cols-2">
-              <div className="flex gap-4">
-                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                  <span className="text-primary font-bold">1</span>
-                </div>
-                <div>
-                  <h4 className="font-semibold mb-2">Cultural Authenticity</h4>
-                  <p className="text-muted-foreground">
-                    Every name we generate respects traditional Chinese naming conventions 
-                    and cultural significance, ensuring authenticity and appropriateness.
-                  </p>
-                </div>
-              </div>
-              
-              <div className="flex gap-4">
-                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                  <span className="text-primary font-bold">2</span>
-                </div>
-                <div>
-                  <h4 className="font-semibold mb-2">Personal Meaning</h4>
-                  <p className="text-muted-foreground">
-                    We believe names should reflect who you are. Our AI considers your personality, 
-                    preferences, and individual characteristics to create truly personalized names.
-                  </p>
-                </div>
-              </div>
-              
-              <div className="flex gap-4">
-                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                  <span className="text-primary font-bold">3</span>
-                </div>
-                <div>
-                  <h4 className="font-semibold mb-2">Educational Value</h4>
-                  <p className="text-muted-foreground">
-                    Beyond just providing names, we help users understand the meaning, 
-                    pronunciation, and cultural context of their Chinese names.
-                  </p>
-                </div>
-              </div>
-              
-              <div className="flex gap-4">
-                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                  <span className="text-primary font-bold">4</span>
-                </div>
-                <div>
-                  <h4 className="font-semibold mb-2">Accessibility</h4>
-                  <p className="text-muted-foreground">
-                    We make Chinese name generation accessible to everyone, regardless of their 
-                    background or familiarity with Chinese culture.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </motion.div>
-
-          {/* CTA Section */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.8 }}
             className="text-center bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5 rounded-2xl p-8 md:p-12"
           >
-            <h3 className="text-2xl font-bold mb-4">Ready to Discover Your Chinese Name?</h3>
-            <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
-              Join thousands of others who have found their perfect Chinese name. 
-              Start your cultural journey today with our AI-powered name generator.
+            <h3 className="text-2xl font-bold mb-4">
+              Your pen pal is waiting
+            </h3>
+            <p className="text-muted-foreground mb-6 max-w-xl mx-auto">
+              You don't have to have the right words. You don't have to
+              explain everything. Just write whatever's on your mind — your
+              pen pal will understand.
             </p>
-            <Button asChild size="lg" className="font-medium">
-              <Link href="/">
-                Get Started Now
+            <Button asChild size="lg" className="gap-2">
+              <Link href="/sign-up">
+                Write Your First Letter
+                <PenLine className="w-4 h-4" />
               </Link>
             </Button>
           </motion.div>
@@ -233,3 +221,30 @@ export default function AboutPage() {
     </div>
   );
 }
+
+const traits = [
+  {
+    emoji: "🌧️",
+    title: "Observant & Poetic",
+    description:
+      "Your pen pal notices the little things — a rainy morning, the smell of coffee — and weaves them into replies. It makes the letters feel alive.",
+  },
+  {
+    emoji: "🤔",
+    title: "Curious, Not Preachy",
+    description:
+      "Instead of telling you what to do, your pen pal asks thoughtful questions that help you reflect. The answers come from within you.",
+  },
+  {
+    emoji: "😅",
+    title: "Imperfect on Purpose",
+    description:
+      "Sometimes your pen pal admits it doesn't have the answer, or says 'I stayed up too late watching the stars.' These little touches make it feel real.",
+  },
+  {
+    emoji: "📚",
+    title: "Well-Read & Warm",
+    description:
+      "Your pen pal might share a poem, a quote, or a story that resonates with what you're going through — never to lecture, always to connect.",
+  },
+];

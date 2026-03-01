@@ -117,7 +117,7 @@ export function SubscriptionStatusCard({
           <CreditCard className="h-6 w-6 text-primary" />
         </div>
         <div>
-          <p className="text-sm text-muted-foreground">Subscription Status</p>
+          <p className="text-sm text-muted-foreground">Your Plan</p>
           {subscription && (
             <h3
               className={`text-2xl font-bold capitalize mt-1 ${
@@ -132,7 +132,7 @@ export function SubscriptionStatusCard({
           )}
           {!subscription && (
             <h3 className="text-2xl font-bold mt-1 text-muted-foreground">
-              No Active Plan
+              Free
             </h3>
           )}
         </div>

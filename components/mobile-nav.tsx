@@ -50,7 +50,7 @@ export function MobileNav({ items, user, isDashboard }: MobileNavProps) {
               )}
               {!isDashboard && (
                 <Button asChild variant="outline" className="w-full">
-                  <Link href="/dashboard">Dashboard</Link>
+                  <Link href="/dashboard">My Letters</Link>
                 </Button>
               )}
               <form action={signOutAction} className="w-full">
@@ -65,7 +65,7 @@ export function MobileNav({ items, user, isDashboard }: MobileNavProps) {
                 <Link href="/sign-in">Sign in</Link>
               </Button>
               <Button asChild variant="default" className="w-full">
-                <Link href="/sign-up">Sign up</Link>
+                <Link href="/sign-up">Write Your First Letter</Link>
               </Button>
             </div>
           )}

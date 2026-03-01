@@ -11,19 +11,23 @@ const baseUrl = process.env.BASE_URL
 
 export const metadata = {
   metadataBase: new URL(baseUrl),
-  title: "Simple Saas Starter Kit",
-  description: "The ultimate Next.js starter kit with Supabase Auth, Creem Payments, and a production-ready dashboard.",
-  keywords: "Next.js starter kit, SaaS boilerplate, Supabase, Creem payments, TypeScript",
+  title: "Dear Stranger - Your Thoughtful AI Pen Pal",
+  description:
+    "A slow, warm AI pen pal who writes back with care. Not a chatbot — a friend from afar who truly listens. Write a letter, and receive a heartfelt reply.",
+  keywords:
+    "AI pen pal, letter writing, emotional support, mindful writing, slow communication, mental wellness, journaling",
   openGraph: {
-    title: "Simple Saas Starter Kit",
-    description: "The ultimate Next.js starter kit with Supabase Auth, Creem Payments, and a production-ready dashboard.",
+    title: "Dear Stranger - Your Thoughtful AI Pen Pal",
+    description:
+      "Not a chatbot — a friend from afar. Write a letter, receive a heartfelt reply hours later. Rediscover the beauty of slow, meaningful correspondence.",
     type: "website",
     url: baseUrl,
   },
   twitter: {
     card: "summary_large_image",
-    title: "Simple Saas Starter Kit",
-    description: "The ultimate Next.js starter kit with Supabase Auth, Creem Payments, and a production-ready dashboard.",
+    title: "Dear Stranger - Your Thoughtful AI Pen Pal",
+    description:
+      "Not a chatbot — a friend from afar. Write a letter, receive a heartfelt reply hours later.",
   },
 };
 

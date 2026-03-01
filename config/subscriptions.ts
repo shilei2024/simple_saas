@@ -2,105 +2,104 @@ import { ProductTier } from "@/types/subscriptions";
 
 export const SUBSCRIPTION_TIERS: ProductTier[] = [
   {
-    name: "Starter",
-    id: "tier-hobby",
-    productId: "prod_6E43JxQebqP1JmRXdM5OmQ", // $11 monthly subscription
-    priceMonthly: "$11",
-    description: "Perfect for individual developers and small projects.",
+    name: "Single Letter",
+    id: "tier-single",
+    productId: "prod_6E43JxQebqP1JmRXdM5OmQ", // Replace with real Creem product ID
+    priceMonthly: "$0.99",
+    description: "One letter, one heartfelt reply. For when you just need to be heard.",
     features: [
-      "Global authentication system",
-      "Database integration",
-      "Secure API routes",
-      "Modern UI components",
-      "Dark/Light mode",
-      "Community forum access",
+      "Write 1 letter, receive 1 reply",
+      "Delivered to your inbox within hours",
+      "Warm, personalized response",
+      "No commitment needed",
     ],
     featured: false,
-    discountCode: "", // Optional discount code
+    creditAmount: 1,
+    discountCode: "",
   },
   {
-    name: "Business",
-    id: "tier-pro",
-    productId: "prod_6E43JxQebqP1JmRXdM5OmQ", // $29 monthly subscription
-    priceMonthly: "$29",
-    description: "Ideal for growing businesses and development teams.",
+    name: "Monthly Pen Pal",
+    id: "tier-monthly",
+    productId: "prod_6E43JxQebqP1JmRXdM5OmQ", // Replace with real Creem product ID
+    priceMonthly: "$4.99",
+    description:
+      "Your ongoing pen pal — like having a friend who always writes back.",
     features: [
-      "Everything in Starter",
-      "Multi-currency payments",
-      "Priority support",
-      "Advanced analytics",
-      "Custom branding options",
-      "API usage dashboard",
+      "8 letters per month (2 per week)",
+      "Pen pal remembers your story",
+      "Conversation continuity across letters",
+      "Priority reply (within 4 hours)",
+      "Language practice mode available",
+      "Cancel anytime",
     ],
     featured: true,
-    discountCode: "", // Optional discount code
+    discountCode: "",
   },
   {
-    name: "Enterprise",
-    id: "tier-enterprise",
-    productId: "prod_6E43JxQebqP1JmRXdM5OmQ", // $99 monthly subscription
-    priceMonthly: "$99",
-    description: "For large organizations with advanced requirements.",
+    name: "Unlimited Letters",
+    id: "tier-unlimited",
+    productId: "prod_6E43JxQebqP1JmRXdM5OmQ", // Replace with real Creem product ID
+    priceMonthly: "$9.99",
+    description: "Write as much as you need. Your pen pal is always here.",
     features: [
-      "Everything in Business",
-      "Dedicated account manager",
-      "Custom implementation support",
-      "High-volume transaction processing",
-      "Advanced security features",
-      "Service Level Agreement (SLA)",
+      "Unlimited letters per month",
+      "Deep conversation memory",
+      "Multiple pen pal personas (coming soon)",
+      "Priority reply (within 2 hours)",
+      "Language practice with gentle corrections",
+      "Early access to new features",
     ],
     featured: false,
-    discountCode: "", // Optional discount code
+    discountCode: "",
   },
 ];
 
 export const CREDITS_TIERS: ProductTier[] = [
   {
-    name: "Basic Package",
-    id: "tier-3-credits",
-    productId: "prod_3oFb2iGX6JQwg6hCKeSkxE", // $9 one-time purchase
-    priceMonthly: "$9",
-    description: "3 credits for testing and small-scale projects.",
+    name: "3 Letters",
+    id: "tier-3-letters",
+    productId: "prod_3oFb2iGX6JQwg6hCKeSkxE", // Replace with real Creem product ID
+    priceMonthly: "$2.49",
+    description: "A small bundle to dip your toes in.",
     creditAmount: 3,
     features: [
-      "3 credits for use across all features",
-      "No expiration date",
-      "Access to standard features",
-      "Community support"
+      "3 letters with replies",
+      "No expiration",
+      "Use at your own pace",
     ],
     featured: false,
-    discountCode: "", // Optional discount code
+    discountCode: "",
   },
   {
-    name: "Standard Package",
-    id: "tier-6-credits",
-    productId: "prod_3oFb2iGX6JQwg6hCKeSkxE", // $13 one-time purchase
-    priceMonthly: "$13",
-    description: "6 credits for medium-sized applications.",
-    creditAmount: 6,
+    name: "10 Letters",
+    id: "tier-10-letters",
+    productId: "prod_3oFb2iGX6JQwg6hCKeSkxE", // Replace with real Creem product ID
+    priceMonthly: "$6.99",
+    description: "The most popular choice — enough for a month of writing.",
+    creditAmount: 10,
     features: [
-      "6 credits for use across all features",
-      "No expiration date",
-      "Priority processing",
-      "Basic email support"
+      "10 letters with replies",
+      "No expiration",
+      "Save 30% vs single letters",
+      "Use at your own pace",
     ],
     featured: true,
-    discountCode: "", // Optional discount code
+    discountCode: "",
   },
   {
-    name: "Premium Package",
-    id: "tier-9-credits",
-    productId: "prod_3oFb2iGX6JQwg6hCKeSkxE", // $29 one-time purchase
-    priceMonthly: "$29",
-    description: "9 credits for larger applications and production use.",
-    creditAmount: 9,
+    name: "25 Letters",
+    id: "tier-25-letters",
+    productId: "prod_3oFb2iGX6JQwg6hCKeSkxE", // Replace with real Creem product ID
+    priceMonthly: "$14.99",
+    description: "For committed writers who find peace in the pen.",
+    creditAmount: 25,
     features: [
-      "9 credits for use across all features",
-      "No expiration date",
-      "Premium support",
-      "Advanced analytics access"
+      "25 letters with replies",
+      "No expiration",
+      "Save 40% vs single letters",
+      "Best value for regular writers",
     ],
     featured: false,
-    discountCode: "", // Optional discount code
+    discountCode: "",
   },
 ];
