@@ -146,6 +146,9 @@ export default function Home() {
             <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-primary/10 text-primary text-xs px-4 py-1.5 rounded-full">
               This is what a reply feels like
             </div>
+            <p className="text-center text-[11px] text-muted-foreground/60 mt-6">
+              * This is an illustrative example. Actual replies are uniquely generated for each letter.
+            </p>
           </motion.div>
         </div>
       </section>
@@ -285,30 +288,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Social Proof / Stats */}
-      <section className="py-16 md:py-20 border-y">
-        <div className="container px-4 md:px-6">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center max-w-4xl mx-auto">
-            {stats.map((stat, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, scale: 0.9 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-                className="space-y-1"
-              >
-                <div className="text-3xl md:text-4xl font-bold text-primary">
-                  {stat.value}
-                </div>
-                <div className="text-sm text-muted-foreground">
-                  {stat.label}
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* Safety & Transparency */}
       <section className="py-16 md:py-20">
@@ -476,12 +455,6 @@ const audiences = [
   },
 ];
 
-const stats = [
-  { value: "50K+", label: "Letters Exchanged" },
-  { value: "92%", label: "Reply Rate" },
-  { value: "4.8", label: "Avg. Satisfaction" },
-  { value: "120+", label: "Countries" },
-];
 
 /* --- FAQ Component --- */
 
