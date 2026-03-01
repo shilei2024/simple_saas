@@ -32,6 +32,16 @@ export async function GET() {
       .single();
 
     if (error) {
+      if (error.code === 'PGRST116') {
+        return NextResponse.json({
+          credits: {
+            total_credits: 0,
+            remaining_credits: 0,
+            free_credits: 0,
+            paid_credits: 0,
+          }
+        });
+      }
       console.error('Error fetching customer data:', error);
       return NextResponse.json(
         { error: 'Failed to fetch customer data' },
@@ -39,13 +49,14 @@ export async function GET() {
       );
     }
 
-    // 返回兼容的格式
     return NextResponse.json({ 
       credits: {
         id: customer.id,
         user_id: customer.user_id,
-        total_credits: customer.credits, // 使用当前积分作为总积分
+        total_credits: customer.credits,
         remaining_credits: customer.credits,
+        free_credits: customer.free_credits || 0,
+        paid_credits: customer.paid_credits || 0,
         created_at: customer.created_at,
         updated_at: customer.updated_at
       }
@@ -83,7 +94,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 获取当前customer记录
     const { data: customer, error: fetchError } = await supabase
       .from('customers')
       .select('*')
@@ -98,20 +108,28 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 检查积分是否足够
-    if (customer.credits < amount) {
+    const totalAvailable = (customer.free_credits || 0) + (customer.paid_credits || 0);
+    if (totalAvailable < amount) {
       return NextResponse.json(
         { error: 'Insufficient credits' },
         { status: 400 }
       );
     }
 
-    // 更新积分
-    const newCredits = customer.credits - amount;
+    const freeToDeduct = Math.min(customer.free_credits || 0, amount);
+    const paidToDeduct = amount - freeToDeduct;
+    const creditType = freeToDeduct > 0 ? 'free' : 'paid';
+
+    const newFreeCredits = (customer.free_credits || 0) - freeToDeduct;
+    const newPaidCredits = (customer.paid_credits || 0) - paidToDeduct;
+    const newCredits = newFreeCredits + newPaidCredits;
+
     const { data: updatedCustomer, error: updateError } = await supabase
       .from('customers')
       .update({
         credits: newCredits,
+        free_credits: newFreeCredits,
+        paid_credits: newPaidCredits,
         updated_at: new Date().toISOString()
       })
       .eq('user_id', user.id)
@@ -126,16 +144,18 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 记录积分消费历史
     const { error: historyError } = await supabase
       .from('credits_history')
       .insert({
         customer_id: customer.id,
         amount: amount,
         type: 'subtract',
-        description: operation || 'name_generation',
+        description: operation || 'letter_reply',
         metadata: {
           operation: operation,
+          credit_type: creditType,
+          free_deducted: freeToDeduct,
+          paid_deducted: paidToDeduct,
           credits_before: customer.credits,
           credits_after: newCredits
         }
@@ -143,16 +163,16 @@ export async function POST(request: NextRequest) {
 
     if (historyError) {
       console.error('Error recording credit transaction:', historyError);
-      // 不影响主要流程，只记录错误
     }
 
-    // 返回兼容的格式
     return NextResponse.json({ 
       credits: {
         id: updatedCustomer.id,
         user_id: updatedCustomer.user_id,
         total_credits: updatedCustomer.credits,
         remaining_credits: updatedCustomer.credits,
+        free_credits: updatedCustomer.free_credits || 0,
+        paid_credits: updatedCustomer.paid_credits || 0,
         created_at: updatedCustomer.created_at,
         updated_at: updatedCustomer.updated_at
       },

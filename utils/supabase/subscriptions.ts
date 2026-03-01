@@ -163,26 +163,29 @@ export async function addCreditsToCustomer(
   description?: string
 ) {
   const supabase = createServiceRoleClient();
-  // Start a transaction
-  const { data: client } = await supabase
+
+  const { data: client, error: fetchError } = await supabase
     .from("customers")
-    .select("credits")
+    .select("credits, paid_credits")
     .eq("id", customerId)
     .single();
+  if (fetchError) throw fetchError;
   if (!client) throw new Error("Customer not found");
-  console.log("🚀 ~ 1client:", client);
-  console.log("🚀 ~ 1credits:", credits);
-  const newCredits = (client.credits || 0) + credits;
 
-  // Update customer credits
+  const newCredits = (client.credits || 0) + credits;
+  const newPaidCredits = (client.paid_credits || 0) + credits;
+
   const { error: updateError } = await supabase
     .from("customers")
-    .update({ credits: newCredits, updated_at: new Date().toISOString() })
+    .update({
+      credits: newCredits,
+      paid_credits: newPaidCredits,
+      updated_at: new Date().toISOString(),
+    })
     .eq("id", customerId);
 
   if (updateError) throw updateError;
 
-  // Record the transaction in credits_history
   const { error: historyError } = await supabase
     .from("credits_history")
     .insert({
@@ -191,6 +194,13 @@ export async function addCreditsToCustomer(
       type: "add",
       description: description || "Credits purchase",
       creem_order_id: creemOrderId,
+      metadata: {
+        credit_type: "paid",
+        credits_before: client.credits,
+        credits_after: newCredits,
+        paid_credits_before: client.paid_credits,
+        paid_credits_after: newPaidCredits,
+      },
     });
 
   if (historyError) throw historyError;
@@ -205,26 +215,37 @@ export async function useCredits(
 ) {
   const supabase = createServiceRoleClient();
 
-  // Start a transaction
-  const { data: client } = await supabase
+  const { data: client, error: fetchError } = await supabase
     .from("customers")
-    .select("credits")
+    .select("credits, free_credits, paid_credits")
     .eq("id", customerId)
     .single();
+  if (fetchError) throw fetchError;
   if (!client) throw new Error("Customer not found");
-  if ((client.credits || 0) < credits) throw new Error("Insufficient credits");
 
-  const newCredits = client.credits - credits;
+  const totalAvailable = (client.free_credits || 0) + (client.paid_credits || 0);
+  if (totalAvailable < credits) throw new Error("Insufficient credits");
 
-  // Update customer credits
+  let freeToDeduct = Math.min(client.free_credits || 0, credits);
+  let paidToDeduct = credits - freeToDeduct;
+  const creditType = freeToDeduct > 0 ? "free" : "paid";
+
+  const newFreeCredits = (client.free_credits || 0) - freeToDeduct;
+  const newPaidCredits = (client.paid_credits || 0) - paidToDeduct;
+  const newCredits = newFreeCredits + newPaidCredits;
+
   const { error: updateError } = await supabase
     .from("customers")
-    .update({ credits: newCredits, updated_at: new Date().toISOString() })
+    .update({
+      credits: newCredits,
+      free_credits: newFreeCredits,
+      paid_credits: newPaidCredits,
+      updated_at: new Date().toISOString(),
+    })
     .eq("id", customerId);
 
   if (updateError) throw updateError;
 
-  // Record the transaction in credits_history
   const { error: historyError } = await supabase
     .from("credits_history")
     .insert({
@@ -232,6 +253,11 @@ export async function useCredits(
       amount: credits,
       type: "subtract",
       description,
+      metadata: {
+        credit_type: creditType,
+        free_deducted: freeToDeduct,
+        paid_deducted: paidToDeduct,
+      },
     });
 
   if (historyError) throw historyError;

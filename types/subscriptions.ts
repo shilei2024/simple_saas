@@ -1,3 +1,9 @@
+export type ReplyTier =
+  | "free"
+  | "paid_credits"
+  | "monthly_subscription"
+  | "unlimited_subscription";
+
 export interface ProductTier {
   name: string;
   id: string;
@@ -8,6 +14,7 @@ export interface ProductTier {
   features?: string[];
   creditAmount?: number;
   discountCode?: string;
+  replyTier?: ReplyTier;
 }
 
 export type SubscriptionStatus = {

@@ -37,8 +37,8 @@ export interface CreemProduct {
   updated_at: string;
   mode: string;
   metadata?: {
-    credits?: number; // Number of credits this product provides
-    product_type?: "subscription" | "credits"; // Type of the product
+    credits?: number;
+    product_type?: "subscription" | "credits";
   };
 }
 
@@ -48,7 +48,7 @@ export interface CreemSubscription {
   product: string | CreemProduct;
   customer: string | CreemCustomer;
   collection_method: "charge_automatically";
-  status: "active" | "canceled" | "expired";
+  status: "active" | "trialing" | "canceled" | "expired" | "paid" | "unpaid";
   canceled_at: string | null;
   current_period_start_date?: string;
   current_period_end_date?: string;
@@ -70,9 +70,9 @@ export interface CreemOrder {
   updated_at: string;
   mode: string;
   metadata: {
-    user_id: string; // User ID of the customer
-    product_type: "subscription" | "credits"; // Type of the product
-    credits?: number; // Number of credits this order provides
+    user_id: string;
+    product_type: "subscription" | "credits";
+    credits?: number;
   };
 }
 
@@ -84,7 +84,7 @@ export interface CreemCheckout {
   product: CreemProduct;
   customer: CreemCustomer;
   subscription?: CreemSubscription;
-  custom_fields: any[];
+  custom_fields: unknown[];
   status: "completed" | "pending" | "failed";
   metadata?: Record<string, any>;
   mode: string;
@@ -94,7 +94,7 @@ export interface CreemWebhookEvent {
   id: string;
   eventType: CreemEventType;
   created_at: number;
-  object: CreemCheckout | CreemSubscription | any;
+  object: Record<string, any>;
   mode: string;
 }
 

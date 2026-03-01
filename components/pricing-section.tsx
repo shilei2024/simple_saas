@@ -54,6 +54,7 @@ export function PricingSection({ className }: PricingSectionProps) {
           productType: tier.creditAmount ? "credits" : "subscription",
           userId: user.id,
           credits: tier.creditAmount,
+          replyTier: tier.replyTier || "paid_credits",
         }),
       });
 

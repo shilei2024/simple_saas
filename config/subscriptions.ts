@@ -4,7 +4,7 @@ export const SUBSCRIPTION_TIERS: ProductTier[] = [
   {
     name: "Single Letter",
     id: "tier-single",
-    productId: "prod_6E43JxQebqP1JmRXdM5OmQ", // Replace with real Creem product ID
+    productId: "prod_1twMltjm8EU2Ee8Zjozuzp",
     priceMonthly: "$0.99",
     description: "One letter, one heartfelt reply. For when you just need to be heard.",
     features: [
@@ -16,11 +16,12 @@ export const SUBSCRIPTION_TIERS: ProductTier[] = [
     featured: false,
     creditAmount: 1,
     discountCode: "",
+    replyTier: "paid_credits",
   },
   {
     name: "Monthly Pen Pal",
     id: "tier-monthly",
-    productId: "prod_6E43JxQebqP1JmRXdM5OmQ", // Replace with real Creem product ID
+    productId: "prod_61iQwaPtpU33KZwgncjz52",
     priceMonthly: "$4.99",
     description:
       "Your ongoing pen pal — like having a friend who always writes back.",
@@ -34,11 +35,12 @@ export const SUBSCRIPTION_TIERS: ProductTier[] = [
     ],
     featured: true,
     discountCode: "",
+    replyTier: "monthly_subscription",
   },
   {
     name: "Unlimited Letters",
     id: "tier-unlimited",
-    productId: "prod_6E43JxQebqP1JmRXdM5OmQ", // Replace with real Creem product ID
+    productId: "prod_6VktE6EO2BK22wMaY3DkQ9",
     priceMonthly: "$9.99",
     description: "Write as much as you need. Your pen pal is always here.",
     features: [
@@ -51,6 +53,7 @@ export const SUBSCRIPTION_TIERS: ProductTier[] = [
     ],
     featured: false,
     discountCode: "",
+    replyTier: "unlimited_subscription",
   },
 ];
 
@@ -58,7 +61,7 @@ export const CREDITS_TIERS: ProductTier[] = [
   {
     name: "3 Letters",
     id: "tier-3-letters",
-    productId: "prod_3oFb2iGX6JQwg6hCKeSkxE", // Replace with real Creem product ID
+    productId: "prod_5ejlU4SzmW1MdK4qfEQ9lX",
     priceMonthly: "$2.49",
     description: "A small bundle to dip your toes in.",
     creditAmount: 3,
@@ -73,7 +76,7 @@ export const CREDITS_TIERS: ProductTier[] = [
   {
     name: "10 Letters",
     id: "tier-10-letters",
-    productId: "prod_3oFb2iGX6JQwg6hCKeSkxE", // Replace with real Creem product ID
+    productId: "prod_2uUc26So9L8Q8v46i0n8tV",
     priceMonthly: "$6.99",
     description: "The most popular choice — enough for a month of writing.",
     creditAmount: 10,
@@ -89,7 +92,7 @@ export const CREDITS_TIERS: ProductTier[] = [
   {
     name: "25 Letters",
     id: "tier-25-letters",
-    productId: "prod_3oFb2iGX6JQwg6hCKeSkxE", // Replace with real Creem product ID
+    productId: "prod_4D1XouTeJ4ACBErGXR9zbu",
     priceMonthly: "$14.99",
     description: "For committed writers who find peace in the pen.",
     creditAmount: 25,
