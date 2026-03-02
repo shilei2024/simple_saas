@@ -35,13 +35,24 @@ export async function GET(request: Request) {
       return new NextResponse("Not a paid customer yet", { status: 404 });
     }
 
+    const creemApiUrl = process.env.CREEM_API_URL;
+    const creemApiKey = process.env.CREEM_API_KEY;
+    if (!creemApiUrl) {
+      console.error("CREEM_API_URL is not configured");
+      return new NextResponse("Server not configured", { status: 500 });
+    }
+    if (!creemApiKey) {
+      console.error("CREEM_API_KEY is not configured");
+      return new NextResponse("Server not configured", { status: 500 });
+    }
+
     // Call Creem API to get the customer portal link
     const response = await fetch(
-      `${process.env.CREEM_API_URL}/customers/billing`,
+      `${creemApiUrl}/customers/billing`,
       {
         method: "POST",
         headers: {
-          "x-api-key": process.env.CREEM_API_KEY!,
+          "x-api-key": creemApiKey,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({

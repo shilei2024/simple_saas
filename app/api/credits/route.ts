@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
+import { createServiceRoleClient } from "@/utils/supabase/service-role";
 
 // GET - 获取用户积分（使用统一的customers表）
 export async function GET() {
@@ -124,15 +125,61 @@ export async function POST(request: NextRequest) {
     const newPaidCredits = (customer.paid_credits || 0) - paidToDeduct;
     const newCredits = newFreeCredits + newPaidCredits;
 
-    const { data: updatedCustomer, error: updateError } = await supabase
-      .from('customers')
+    // Use service role for ledger updates (paid lots) + balance update
+    const service = createServiceRoleClient();
+    const now = new Date().toISOString();
+
+    // Consume paid credits from lots FIFO (Strategy C). Free credits remain direct.
+    const consumedLotIds: string[] = [];
+    if (paidToDeduct > 0) {
+      for (let i = 0; i < paidToDeduct; i++) {
+        const { data: lot } = await service
+          .from("credit_lots")
+          .select("id, remaining_credits")
+          .eq("customer_id", customer.id)
+          .is("refunded_at", null)
+          .gt("remaining_credits", 0)
+          .order("created_at", { ascending: true })
+          .limit(1)
+          .single();
+
+        if (!lot) {
+          return NextResponse.json(
+            { error: "No paid credit lots available" },
+            { status: 409 }
+          );
+        }
+
+        const { data: updatedLot } = await service
+          .from("credit_lots")
+          .update({
+            remaining_credits: lot.remaining_credits - 1,
+            updated_at: now,
+          })
+          .eq("id", lot.id)
+          .gt("remaining_credits", 0)
+          .select("id")
+          .single();
+
+        if (!updatedLot?.id) {
+          return NextResponse.json(
+            { error: "Failed to reserve paid credits (race)" },
+            { status: 409 }
+          );
+        }
+        consumedLotIds.push(updatedLot.id);
+      }
+    }
+
+    const { data: updatedCustomer, error: updateError } = await service
+      .from("customers")
       .update({
         credits: newCredits,
         free_credits: newFreeCredits,
         paid_credits: newPaidCredits,
-        updated_at: new Date().toISOString()
+        updated_at: now,
       })
-      .eq('user_id', user.id)
+      .eq("id", customer.id)
       .select()
       .single();
 
@@ -144,7 +191,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { error: historyError } = await supabase
+    const { error: historyError } = await service
       .from('credits_history')
       .insert({
         customer_id: customer.id,
@@ -156,6 +203,7 @@ export async function POST(request: NextRequest) {
           credit_type: creditType,
           free_deducted: freeToDeduct,
           paid_deducted: paidToDeduct,
+          paid_lot_ids: consumedLotIds,
           credits_before: customer.credits,
           credits_after: newCredits
         }

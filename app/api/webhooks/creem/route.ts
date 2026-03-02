@@ -18,14 +18,30 @@ export async function POST(request: Request) {
     const headersList = headers();
     const signature = (await headersList).get("creem-signature") || "";
 
+    if (!CREEM_WEBHOOK_SECRET) {
+      console.error("[Webhook] CREEM_WEBHOOK_SECRET is not configured");
+      return new NextResponse("Server not configured", { status: 500 });
+    }
+
     const expectedSignature = crypto
       .createHmac("sha256", CREEM_WEBHOOK_SECRET)
       .update(body)
       .digest("hex");
 
-    if (signature !== expectedSignature) {
+    const looksLikeHex = /^[0-9a-f]{64}$/i.test(signature);
+    if (!looksLikeHex) {
+      console.warn("[Webhook] Invalid signature format");
+      return new NextResponse("Invalid signature", { status: 401 });
+    }
+
+    const sigBuf = Buffer.from(signature, "hex");
+    const expBuf = Buffer.from(expectedSignature, "hex");
+    const matches =
+      sigBuf.length === expBuf.length && crypto.timingSafeEqual(sigBuf, expBuf);
+
+    if (!matches) {
       console.warn(
-        `[Webhook] Signature mismatch — received: ${signature.substring(0, 16)}..., expected: ${expectedSignature.substring(0, 16)}...`
+        `[Webhook] Signature mismatch — received: ${signature.substring(0, 16)}...`
       );
       return new NextResponse("Invalid signature", { status: 401 });
     }
@@ -36,6 +52,9 @@ export async function POST(request: Request) {
     switch (event.eventType) {
       case "checkout.completed":
         await handleCheckoutCompleted(event);
+        break;
+      case "refund.created":
+        await handleRefundCreated(event);
         break;
       case "subscription.active":
         await handleSubscriptionEvent(event);
@@ -75,6 +94,17 @@ function resolveCustomer(raw: any): Record<string, any> | null {
   return null;
 }
 
+function resolveOrderId(raw: any): string | null {
+  if (!raw || typeof raw !== "object") return null;
+  return (
+    raw.order?.id ||
+    raw.order_id ||
+    raw.orderId ||
+    raw.orderID ||
+    null
+  );
+}
+
 async function handleCheckoutCompleted(event: CreemWebhookEvent) {
   const checkout = event.object;
   console.log("[Webhook] Processing checkout.completed:", checkout.id);
@@ -105,6 +135,102 @@ async function handleCheckoutCompleted(event: CreemWebhookEvent) {
   } else if (checkout.subscription) {
     await createOrUpdateSubscription(checkout.subscription, customerId);
     console.log(`[Webhook] Created/updated subscription for customer ${customerId}`);
+  }
+}
+
+async function handleRefundCreated(event: CreemWebhookEvent) {
+  const refund = event.object;
+  const refundId = refund?.id || event.id;
+  const orderId = resolveOrderId(refund);
+
+  console.log("[Webhook] Processing refund.created:", refundId, "order:", orderId);
+
+  if (!orderId) {
+    console.warn("[Webhook] refund.created missing order id; skipping");
+    return;
+  }
+
+  const { createServiceRoleClient } = await import("@/utils/supabase/service-role");
+  const supabase = createServiceRoleClient();
+
+  // Find all non-refunded lots for this order
+  const { data: lots, error: lotsError } = await supabase
+    .from("credit_lots")
+    .select("id, customer_id, total_credits, remaining_credits, refunded_at")
+    .eq("creem_order_id", orderId)
+    .is("refunded_at", null);
+
+  if (lotsError) throw lotsError;
+  if (!lots || lots.length === 0) {
+    console.log("[Webhook] No credit lots found for refunded order; nothing to do.");
+    return;
+  }
+
+  const now = new Date().toISOString();
+  const customerId = lots[0].customer_id as string;
+  const refundableRemaining = lots.reduce(
+    (sum, l) => sum + (Number(l.remaining_credits) || 0),
+    0
+  );
+
+  // Mark lots as refunded and zero-out remaining credits
+  const lotIds = lots.map((l) => l.id);
+  const { error: updateLotsError } = await supabase
+    .from("credit_lots")
+    .update({
+      remaining_credits: 0,
+      refunded_at: now,
+      creem_refund_id: refundId,
+      updated_at: now,
+    })
+    .in("id", lotIds);
+  if (updateLotsError) throw updateLotsError;
+
+  if (refundableRemaining > 0) {
+    // Decrease visible balances (paid + total) by the refundable remaining amount
+    const { data: cust, error: custError } = await supabase
+      .from("customers")
+      .select("credits, paid_credits")
+      .eq("id", customerId)
+      .single();
+    if (custError) throw custError;
+
+    const paidBefore = Number(cust?.paid_credits || 0);
+    const totalBefore = Number(cust?.credits || 0);
+    const paidAfter = Math.max(0, paidBefore - refundableRemaining);
+    const totalAfter = Math.max(0, totalBefore - refundableRemaining);
+
+    const { error: custUpdateError } = await supabase
+      .from("customers")
+      .update({
+        paid_credits: paidAfter,
+        credits: totalAfter,
+        updated_at: now,
+      })
+      .eq("id", customerId);
+    if (custUpdateError) throw custUpdateError;
+
+    // Record a balance adjustment
+    await supabase.from("credits_history").insert({
+      customer_id: customerId,
+      amount: refundableRemaining,
+      type: "subtract",
+      description: `Refund processed for order ${orderId}`,
+      creem_order_id: orderId,
+      metadata: {
+        reason: "refund",
+        creem_refund_id: refundId,
+        lot_ids: lotIds,
+        paid_credits_before: paidBefore,
+        paid_credits_after: paidAfter,
+        credits_before: totalBefore,
+        credits_after: totalAfter,
+        note:
+          lots.some((l) => Number(l.remaining_credits || 0) < Number(l.total_credits || 0))
+            ? "Order credits were partially used; only remaining credits were removed."
+            : "All remaining credits for this order were removed.",
+      },
+    });
   }
 }
 

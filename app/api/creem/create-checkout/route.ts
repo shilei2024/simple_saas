@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
-import { creem } from '@/lib/creem';
+import { getCreem } from '@/lib/creem';
 
 export async function POST(request: Request) {
   try {
@@ -17,6 +17,7 @@ export async function POST(request: Request) {
     const origin = request.headers.get('origin') || process.env.BASE_URL || 'https://mindfulpenpal.com';
     const successUrl = process.env.CREEM_SUCCESS_URL || `${origin}/dashboard`;
 
+    const creem = getCreem();
     const checkout = await creem.checkouts.create({
       productId,
       customer: {

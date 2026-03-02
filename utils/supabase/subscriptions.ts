@@ -97,13 +97,21 @@ export async function createOrUpdateSubscription(
     throw fetchError;
   }
 
+  // Map Creem statuses to DB-compatible statuses
+  // Creem may send "paid" which is not in the DB check constraint; treat it as "active"
+  const STATUS_MAP: Record<string, string> = {
+    paid: "active",
+  };
+  const rawStatus = creemSubscription?.status || "active";
+  const mappedStatus = STATUS_MAP[rawStatus] || rawStatus;
+
   const subscriptionData = {
     customer_id: customerId,
     creem_product_id:
       typeof creemSubscription?.product === "string"
         ? creemSubscription?.product
         : creemSubscription?.product?.id,
-    status: creemSubscription?.status,
+    status: mappedStatus,
     current_period_start: creemSubscription?.current_period_start_date,
     current_period_end: creemSubscription?.current_period_end_date,
     canceled_at: creemSubscription?.canceled_at,
@@ -185,6 +193,21 @@ export async function addCreditsToCustomer(
     .eq("id", customerId);
 
   if (updateError) throw updateError;
+
+  // Create a paid-credit lot bound to this order (Strategy C ledger)
+  // Note: For legacy systems this may be missing an orderId; still create a lot so FIFO consumption works.
+  const { error: lotError } = await supabase.from("credit_lots").insert({
+    customer_id: customerId,
+    source: creemOrderId ? "purchase" : "migration",
+    creem_order_id: creemOrderId || null,
+    total_credits: credits,
+    remaining_credits: credits,
+    metadata: {
+      reason: "credits_purchase",
+      creem_order_id: creemOrderId || null,
+    },
+  });
+  if (lotError) throw lotError;
 
   const { error: historyError } = await supabase
     .from("credits_history")

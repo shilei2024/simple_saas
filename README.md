@@ -82,6 +82,7 @@ utils/supabase/
   subscriptions.ts         # DB operations: customers, subscriptions, credits
   service-role.ts          # Supabase service-role client
   middleware.ts            # Auth session refresh
+proxy.ts                   # Request proxy (replaces deprecated middleware.ts)
 supabase/migrations/       # Database schema
 ```
 

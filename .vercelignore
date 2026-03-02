@@ -1,0 +1,14 @@
+node_modules
+.next
+
+# Env files should never be uploaded
+.env*
+!.env.example
+
+# Tooling artifacts
+*.tsbuildinfo
+tsconfig.tsbuildinfo
+
+# Local Supabase CLI state (if present)
+supabase/.branches
+supabase/.temp

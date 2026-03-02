@@ -4,8 +4,13 @@ import { processIncomingEmails } from "@/lib/email-processor";
 const CRON_SECRET = process.env.CRON_SECRET;
 
 export async function GET(request: Request) {
+  if (!CRON_SECRET) {
+    console.error("[CRON] CRON_SECRET is not configured");
+    return NextResponse.json({ error: "Server not configured" }, { status: 500 });
+  }
+
   const authHeader = request.headers.get("authorization");
-  if (CRON_SECRET && authHeader !== `Bearer ${CRON_SECRET}`) {
+  if (authHeader !== `Bearer ${CRON_SECRET}`) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

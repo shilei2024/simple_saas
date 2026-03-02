@@ -4,8 +4,8 @@ export const SUBSCRIPTION_TIERS: ProductTier[] = [
   {
     name: "Single Letter",
     id: "tier-single",
-    productId: "prod_1twMltjm8EU2Ee8Zjozuzp",
-    priceMonthly: "$0.99",
+    productId: "prod_6RHWW5TUdegsNlDSkbgt22",
+    priceMonthly: "$1.00",
     description: "One letter, one heartfelt reply. For when you just need to be heard.",
     features: [
       "Write 1 letter, receive 1 reply",
@@ -21,7 +21,7 @@ export const SUBSCRIPTION_TIERS: ProductTier[] = [
   {
     name: "Monthly Pen Pal",
     id: "tier-monthly",
-    productId: "prod_61iQwaPtpU33KZwgncjz52",
+    productId: "prod_8olyQpCusbESKcZ3BRPxg",
     priceMonthly: "$4.99",
     description:
       "Your ongoing pen pal — like having a friend who always writes back.",
@@ -40,7 +40,7 @@ export const SUBSCRIPTION_TIERS: ProductTier[] = [
   {
     name: "Unlimited Letters",
     id: "tier-unlimited",
-    productId: "prod_6VktE6EO2BK22wMaY3DkQ9",
+    productId: "prod_1bzdWm7MGwVHVDUJwhIhvZ",
     priceMonthly: "$9.99",
     description: "Write as much as you need. Your pen pal is always here.",
     features: [
@@ -61,7 +61,7 @@ export const CREDITS_TIERS: ProductTier[] = [
   {
     name: "3 Letters",
     id: "tier-3-letters",
-    productId: "prod_5ejlU4SzmW1MdK4qfEQ9lX",
+    productId: "prod_25vulC92JrnW2Vg0jNXPk1",
     priceMonthly: "$2.49",
     description: "A small bundle to dip your toes in.",
     creditAmount: 3,
@@ -76,7 +76,7 @@ export const CREDITS_TIERS: ProductTier[] = [
   {
     name: "10 Letters",
     id: "tier-10-letters",
-    productId: "prod_2uUc26So9L8Q8v46i0n8tV",
+    productId: "prod_6hJpb5ut0rOUZl0QN898Im",
     priceMonthly: "$6.99",
     description: "The most popular choice — enough for a month of writing.",
     creditAmount: 10,
@@ -92,7 +92,7 @@ export const CREDITS_TIERS: ProductTier[] = [
   {
     name: "25 Letters",
     id: "tier-25-letters",
-    productId: "prod_4D1XouTeJ4ACBErGXR9zbu",
+    productId: "prod_7LsoqEDRwmPp6LXOHeezE4",
     priceMonthly: "$14.99",
     description: "For committed writers who find peace in the pen.",
     creditAmount: 25,

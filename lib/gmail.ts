@@ -11,12 +11,19 @@ function getProxyAgent(): https.Agent | undefined {
 }
 
 function getGmailClient(): gmail_v1.Gmail {
+  const clientId = process.env.GMAIL_CLIENT_ID;
+  const clientSecret = process.env.GMAIL_CLIENT_SECRET;
+  const refreshToken = process.env.GMAIL_REFRESH_TOKEN;
+  if (!clientId) throw new Error("GMAIL_CLIENT_ID is not configured");
+  if (!clientSecret) throw new Error("GMAIL_CLIENT_SECRET is not configured");
+  if (!refreshToken) throw new Error("GMAIL_REFRESH_TOKEN is not configured");
+
   const auth = new google.auth.OAuth2(
-    process.env.GMAIL_CLIENT_ID,
-    process.env.GMAIL_CLIENT_SECRET
+    clientId,
+    clientSecret
   );
   auth.setCredentials({
-    refresh_token: process.env.GMAIL_REFRESH_TOKEN,
+    refresh_token: refreshToken,
   });
 
   const agent = getProxyAgent();

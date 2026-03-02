@@ -20,8 +20,16 @@ const footerLinks = [
   {
     title: "Legal",
     links: [
-      { label: "Privacy", href: "/privacy" },
-      { label: "Terms", href: "/terms" },
+      { label: "Terms of Service", href: "/terms" },
+      { label: "Privacy Policy", href: "/privacy" },
+      { label: "Refund Policy", href: "/refund-policy" },
+    ],
+  },
+  {
+    title: "Subscription",
+    links: [
+      { label: "Cancel Subscription", href: "/cancel-subscription" },
+      { label: "Manage Billing", href: "/dashboard" },
     ],
   },
 ];
@@ -44,7 +52,7 @@ export function Footer() {
               local helpline.
             </p>
           </div>
-          <div className="col-span-2 grid grid-cols-2 gap-8 sm:grid-cols-3 lg:col-span-4">
+          <div className="col-span-2 grid grid-cols-2 gap-8 sm:grid-cols-3 md:grid-cols-5 lg:col-span-4">
             {footerLinks.map((group) => (
               <div key={group.title} className="flex flex-col gap-3">
                 <h3 className="text-sm font-medium">{group.title}</h3>

@@ -127,13 +127,20 @@ async function intakeOneEmail(
   // Dedup
   const { data: existing } = await supabase
     .from("email_correspondence")
-    .select("id")
+    .select("id, status, customer_id")
     .eq("gmail_message_id", email.messageId)
     .single();
 
   if (existing) {
-    result.intake.skipped++;
-    return;
+    // If previously fully scheduled/processed, skip. If pending/failed, we'll retry.
+    if (
+      ["scheduled", "processing", "replied", "skipped"].includes(
+        String(existing.status)
+      )
+    ) {
+      result.intake.skipped++;
+      return;
+    }
   }
 
   // Look up sender
@@ -149,19 +156,33 @@ async function intakeOneEmail(
     return;
   }
 
+  // Check for active subscription first
+  const activeSubscription = await getActiveSubscription(customer, supabase);
+
   const totalCredits =
     (customer.free_credits || 0) + (customer.paid_credits || 0);
 
-  // No credits → reply immediately with purchase link
-  if (totalCredits <= 0) {
+  // Subscription should be used first (so we don't burn purchased credits)
+  let useSubscription = false;
+  if (activeSubscription) {
+    const quotaAvailable = await checkSubscriptionQuotaAvailable(
+      customer.id,
+      activeSubscription,
+      supabase
+    );
+    useSubscription = quotaAvailable;
+  }
+
+  // No subscription allowance available + no credits → reply with purchase link
+  if (!useSubscription && totalCredits <= 0) {
     await handleNoCredits(email, customer.id, supabase, result);
     return;
   }
 
   // Determine which reply tier applies
-  const replyTier = await determineReplyTier(customer, supabase);
-  const useFreeCredits = (customer.free_credits || 0) > 0;
-  const creditType = useFreeCredits ? "free" : "paid";
+  const replyTier = await determineReplyTier(customer, supabase, activeSubscription);
+  const useFreeCredits = !useSubscription && (customer.free_credits || 0) > 0;
+  const creditType = useSubscription ? null : useFreeCredits ? "free" : "paid";
 
   // Calculate scheduled reply time
   const delayMs = randomDelay(REPLY_DELAYS[replyTier]);
@@ -169,60 +190,103 @@ async function intakeOneEmail(
 
   const delayHours = (delayMs / (1000 * 60 * 60)).toFixed(1);
 
-  // Save to DB as "scheduled"
-  await supabase.from("email_correspondence").insert({
-    customer_id: customer.id,
-    sender_email: email.fromEmail,
-    recipient_email: "penpal@mindfulpenpal.com",
-    subject: email.subject,
-    incoming_body: email.body,
-    gmail_message_id: email.messageId,
-    gmail_thread_id: email.threadId,
-    status: "scheduled",
-    credit_type: creditType,
-    reply_tier: replyTier,
-    scheduled_reply_at: scheduledAt.toISOString(),
-    metadata: {
-      delay_ms: delayMs,
-      delay_hours: delayHours,
-      from_header: email.from,
-      original_message_id: email.originalMessageId,
-    },
-  });
-
-  // Deduct credits immediately (reserve them)
-  if (useFreeCredits) {
-    await supabase
-      .from("customers")
-      .update({
-        free_credits: customer.free_credits - 1,
-        credits: customer.credits - 1,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", customer.id);
+  // Create (or reuse) a pending correspondence first, then charge atomically via RPC.
+  let correspondenceId: string;
+  if (existing?.id) {
+    correspondenceId = existing.id;
   } else {
-    await supabase
-      .from("customers")
-      .update({
-        paid_credits: customer.paid_credits - 1,
-        credits: customer.credits - 1,
-        updated_at: new Date().toISOString(),
+    const { data: newCorr, error: newCorrError } = await supabase
+      .from("email_correspondence")
+      .insert({
+        customer_id: customer.id,
+        sender_email: email.fromEmail,
+        recipient_email: "penpal@mindfulpenpal.com",
+        subject: email.subject,
+        incoming_body: email.body,
+        gmail_message_id: email.messageId,
+        gmail_thread_id: email.threadId,
+        status: "pending",
+        reply_tier: replyTier,
+        scheduled_reply_at: scheduledAt.toISOString(),
+        credit_type: null,
+        metadata: {
+          delay_ms: delayMs,
+          delay_hours: delayHours,
+          from_header: email.from,
+          original_message_id: email.originalMessageId,
+          subscription_id: activeSubscription?.id,
+        },
       })
-      .eq("id", customer.id);
+      .select("id")
+      .single();
+
+    if (newCorrError) throw newCorrError;
+    correspondenceId = newCorr.id;
   }
 
-  await supabase.from("credits_history").insert({
-    customer_id: customer.id,
-    amount: 1,
-    type: "subtract",
-    description: `Pen pal reply scheduled: ${email.subject}`,
-    metadata: {
-      credit_type: creditType,
+  const usageKind = useSubscription
+    ? "subscription"
+    : useFreeCredits
+      ? "free"
+      : "paid";
+
+  const { data: usageRows, error: usageError } = await supabase.rpc(
+    "reserve_correspondence_credit_usage",
+    {
+      p_customer_id: customer.id,
+      p_email_correspondence_id: correspondenceId,
+      p_kind: usageKind,
+      p_subscription_id: useSubscription ? activeSubscription?.id : null,
+      p_metadata: {
+        reply_tier: replyTier,
+        email_message_id: email.messageId,
+        scheduled_reply_at: scheduledAt.toISOString(),
+        subscription_id: activeSubscription?.id || null,
+        creem_product_id: activeSubscription?.creem_product_id || null,
+      },
+    }
+  );
+  if (usageError) throw usageError;
+
+  const usage = Array.isArray(usageRows) ? usageRows[0] : usageRows;
+  const finalKind = usage?.kind || usageKind;
+  const finalCreditType =
+    finalKind === "free" ? "free" : finalKind === "paid" ? "paid" : null;
+
+  // Mark correspondence as scheduled only after charge succeeds.
+  await supabase
+    .from("email_correspondence")
+    .update({
+      status: "scheduled",
+      credit_type: finalCreditType,
       reply_tier: replyTier,
-      email_message_id: email.messageId,
       scheduled_reply_at: scheduledAt.toISOString(),
-    },
-  });
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", correspondenceId);
+
+  // Best-effort audit row
+  try {
+    await supabase.from("credits_history").insert({
+      customer_id: customer.id,
+      amount: finalKind === "subscription" ? 0 : 1,
+      type: "subtract",
+      description:
+        finalKind === "subscription"
+          ? `Subscription letter: ${email.subject}`
+          : `Pen pal reply scheduled: ${email.subject}`,
+      metadata: {
+        credit_type: finalKind,
+        reply_tier: replyTier,
+        email_message_id: email.messageId,
+        email_correspondence_id: correspondenceId,
+        subscription_id: activeSubscription?.id || null,
+        lot_id: usage?.lot_id || null,
+      },
+    });
+  } catch (e) {
+    console.warn("[Intake] credits_history insert failed (non-fatal):", e);
+  }
 
   await markAsRead(email.messageId);
   result.intake.scheduled++;
@@ -363,23 +427,75 @@ async function dispatchOneReply(
 //  Helpers
 // ──────────────────────────────────────────────
 
+async function getActiveSubscription(
+  customer: { id: string; user_id: string },
+  supabase: ReturnType<typeof createServiceRoleClient>
+) {
+  const { data: subscription } = await supabase
+    .from("subscriptions")
+    .select("id, creem_product_id, status, current_period_start, current_period_end, metadata")
+    .eq("customer_id", customer.id)
+    .in("status", ["active", "trialing"])
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .single();
+
+  return subscription;
+}
+
+async function checkSubscriptionQuotaAvailable(
+  customerId: string,
+  subscription: { creem_product_id: string; current_period_start: string; current_period_end: string },
+  supabase: ReturnType<typeof createServiceRoleClient>
+): Promise<boolean> {
+  const { SUBSCRIPTION_TIERS } = await import("@/config/subscriptions");
+  const tier = SUBSCRIPTION_TIERS.find(
+    (t) => t.productId === subscription.creem_product_id
+  );
+
+  // Unlimited plan: always allowed
+  if (tier?.replyTier === "unlimited_subscription") {
+    return true;
+  }
+
+  // Monthly Pen Pal: 8 letters per billing period
+  const monthlyQuota = 8;
+
+  const { count } = await supabase
+    .from("email_correspondence")
+    .select("id", { count: "exact", head: true })
+    .eq("customer_id", customerId)
+    .in("status", ["scheduled", "processing", "replied"])
+    .gte("created_at", subscription.current_period_start)
+    .lte("created_at", subscription.current_period_end);
+
+  return (count || 0) < monthlyQuota;
+}
+
 async function determineReplyTier(
   customer: { id: string; user_id: string; free_credits: number; paid_credits: number },
-  supabase: ReturnType<typeof createServiceRoleClient>
+  supabase: ReturnType<typeof createServiceRoleClient>,
+  activeSubscription?: {
+    creem_product_id: string;
+    status: string;
+    metadata: unknown;
+  } | null
 ): Promise<ReplyTier> {
   if ((customer.free_credits || 0) > 0) {
     return "free";
   }
 
-  // Check for active subscription to determine speed tier
-  const { data: subscription } = await supabase
-    .from("subscriptions")
-    .select("creem_product_id, status, metadata")
-    .eq("customer_id", customer.id)
-    .eq("status", "active")
-    .order("created_at", { ascending: false })
-    .limit(1)
-    .single();
+  // Check subscription to determine speed tier
+  const subscription =
+    activeSubscription ||
+    (await supabase
+      .from("subscriptions")
+      .select("creem_product_id, status, metadata")
+      .eq("customer_id", customer.id)
+      .in("status", ["active", "trialing"])
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .single()).data;
 
   if (subscription) {
     const meta = subscription.metadata as Record<string, any> | null;

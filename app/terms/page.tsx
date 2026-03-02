@@ -12,6 +12,10 @@ import {
   CheckCircle,
   XCircle,
   Users,
+  CreditCard,
+  RefreshCcw,
+  Ban,
+  ShieldCheck,
 } from "lucide-react";
 
 export default function TermsPage() {
@@ -287,59 +291,217 @@ export default function TermsPage() {
             transition={{ duration: 0.5, delay: 0.7 }}
           >
             <div className="bg-muted/30 rounded-2xl p-8">
-              <h3 className="text-2xl font-bold mb-6">
-                Payment and Subscription Terms
+              <h3 className="text-2xl font-bold mb-6 flex items-center gap-3">
+                <CreditCard className="h-6 w-6 text-primary" />
+                Payment and Billing Terms
               </h3>
-              <div className="grid gap-6 md:grid-cols-2">
+              <div className="space-y-6 text-muted-foreground text-sm">
                 <div>
-                  <h4 className="font-semibold mb-3">Purchases</h4>
-                  <ul className="space-y-2 text-muted-foreground text-sm">
-                    <li>
-                      Single letters and letter packs are one-time purchases
-                      that never expire
-                    </li>
-                    <li>
-                      Monthly subscriptions renew automatically unless
-                      cancelled
-                    </li>
-                    <li>
-                      All prices are displayed in USD and include applicable
-                      taxes
-                    </li>
-                    <li>
-                      Payments are processed securely by a trusted third-party
-                      payment provider
-                    </li>
-                  </ul>
-                </div>
-                <div>
-                  <h4 className="font-semibold mb-3">
-                    Cancellation and Refunds
+                  <h4 className="font-semibold mb-3 text-foreground">
+                    Pricing &amp; Purchases
                   </h4>
-                  <ul className="space-y-2 text-muted-foreground text-sm">
+                  <ul className="space-y-2">
                     <li>
-                      Cancel your subscription anytime from your dashboard or
-                      customer portal
+                      <strong>Free credits:</strong> New users receive 3 free
+                      letter credits upon registration — no credit card required.
                     </li>
                     <li>
-                      After cancellation, you retain access until the end of
-                      your billing period
+                      <strong>Single letters:</strong> One-time purchase at
+                      $1.00 per letter.
                     </li>
                     <li>
-                      Unused letter packs remain available after subscription
-                      cancellation
+                      <strong>Letter packs:</strong> Bundles of 3 ($2.49), 10
+                      ($6.99), or 25 ($14.99) letters — one-time purchases that
+                      never expire.
                     </li>
                     <li>
-                      Refund requests handled on a case-by-case basis — contact{" "}
-                      <a
-                        href="mailto:support@mindfulpenpal.com"
-                        className="text-primary hover:underline"
-                      >
-                        support@mindfulpenpal.com
-                      </a>
+                      <strong>Monthly Pen Pal:</strong> $4.99/month for 8
+                      letters per month with priority replies.
+                    </li>
+                    <li>
+                      <strong>Unlimited Letters:</strong> $9.99/month for
+                      unlimited letters with the fastest reply times.
+                    </li>
+                    <li>
+                      All prices are displayed in USD. Applicable taxes may be
+                      added at checkout.
                     </li>
                   </ul>
                 </div>
+                <div>
+                  <h4 className="font-semibold mb-3 text-foreground">
+                    Payment Processing
+                  </h4>
+                  <ul className="space-y-2">
+                    <li>
+                      All payments are processed securely through our trusted
+                      third-party payment provider. We never store your full
+                      credit card number.
+                    </li>
+                    <li>
+                      You agree to provide accurate and complete billing
+                      information when making purchases.
+                    </li>
+                    <li>
+                      By purchasing a subscription, you authorize us to charge
+                      your payment method on a recurring monthly basis until
+                      you cancel.
+                    </li>
+                  </ul>
+                </div>
+                <div>
+                  <h4 className="font-semibold mb-3 text-foreground">
+                    Automatic Renewal
+                  </h4>
+                  <ul className="space-y-2">
+                    <li>
+                      Monthly subscriptions renew automatically at the end of
+                      each billing period at the then-current price.
+                    </li>
+                    <li>
+                      You will receive an email reminder before each renewal.
+                    </li>
+                    <li>
+                      To avoid future charges, cancel at least 24 hours before
+                      your renewal date.
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Cancellation */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.75 }}
+          >
+            <div className="bg-muted/30 rounded-2xl p-8">
+              <h3 className="text-2xl font-bold mb-6 flex items-center gap-3">
+                <Ban className="h-6 w-6 text-primary" />
+                Cancellation Policy
+              </h3>
+              <div className="space-y-4 text-muted-foreground text-sm">
+                <p>
+                  You may cancel your subscription at any time without penalty.
+                  Here is what you need to know:
+                </p>
+                <ul className="space-y-2">
+                  <li>
+                    <strong>How to cancel:</strong> Cancel through your{" "}
+                    <Link
+                      href="/dashboard"
+                      className="text-primary hover:underline"
+                    >
+                      Dashboard
+                    </Link>{" "}
+                    by clicking &quot;Manage Plan&quot; and then &quot;Continue to
+                    Portal&quot;, or email{" "}
+                    <a
+                      href="mailto:support@mindfulpenpal.com"
+                      className="text-primary hover:underline"
+                    >
+                      support@mindfulpenpal.com
+                    </a>{" "}
+                    and we will cancel it for you.
+                  </li>
+                  <li>
+                    <strong>Continued access:</strong> After cancellation, you
+                    retain full access to all subscription features until the
+                    end of your current billing period.
+                  </li>
+                  <li>
+                    <strong>Credits preserved:</strong> Any purchased letter
+                    pack credits remain in your account and never expire, even
+                    after your subscription ends.
+                  </li>
+                  <li>
+                    <strong>No partial billing:</strong> We do not charge
+                    prorated fees. If you cancel mid-cycle, you keep access
+                    until the cycle ends — no extra charge.
+                  </li>
+                  <li>
+                    <strong>Re-subscribing:</strong> You can re-subscribe at
+                    any time. Your account data and conversation history will
+                    be preserved.
+                  </li>
+                </ul>
+                <p className="mt-4">
+                  For a step-by-step guide, visit our{" "}
+                  <Link
+                    href="/cancel-subscription"
+                    className="text-primary hover:underline font-medium"
+                  >
+                    Cancel Subscription
+                  </Link>{" "}
+                  page.
+                </p>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Refund Policy */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.8 }}
+          >
+            <div className="bg-muted/30 rounded-2xl p-8 border-2 border-primary/20">
+              <h3 className="text-2xl font-bold mb-6 flex items-center gap-3">
+                <RefreshCcw className="h-6 w-6 text-primary" />
+                Refund Policy Summary
+              </h3>
+              <div className="space-y-4 text-muted-foreground text-sm">
+                <ul className="space-y-2">
+                  <li>
+                    <strong>7-day guarantee:</strong> New subscribers may
+                    request a full refund within 7 days of their initial
+                    subscription purchase.
+                  </li>
+                  <li>
+                    <strong>Unused letter packs:</strong> Fully unused letter
+                    packs may be refunded within 30 days of purchase.
+                  </li>
+                  <li>
+                    <strong>Used credits:</strong> Letters that have been sent
+                    and replied to are non-refundable.
+                  </li>
+                  <li>
+                    <strong>Technical issues:</strong> If a technical error
+                    prevented delivery, we will restore the credit or issue a
+                    refund.
+                  </li>
+                  <li>
+                    <strong>Duplicate charges:</strong> Accidental or duplicate
+                    charges are always refunded promptly.
+                  </li>
+                  <li>
+                    <strong>Processing time:</strong> Approved refunds are
+                    returned to your original payment method within 5–10
+                    business days.
+                  </li>
+                </ul>
+                <p>
+                  To request a refund, email{" "}
+                  <a
+                    href="mailto:support@mindfulpenpal.com"
+                    className="text-primary hover:underline"
+                  >
+                    support@mindfulpenpal.com
+                  </a>{" "}
+                  with the subject line &quot;Refund Request&quot;.
+                </p>
+                <p className="mt-2">
+                  For complete details, please read our full{" "}
+                  <Link
+                    href="/refund-policy"
+                    className="text-primary hover:underline font-medium"
+                  >
+                    Refund Policy
+                  </Link>
+                  .
+                </p>
               </div>
             </div>
           </motion.div>
@@ -348,7 +510,7 @@ export default function TermsPage() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.8 }}
+            transition={{ duration: 0.5, delay: 0.85 }}
           >
             <div className="bg-muted/30 rounded-2xl p-8">
               <h3 className="text-2xl font-bold mb-6">
@@ -387,6 +549,38 @@ export default function TermsPage() {
             transition={{ duration: 0.5, delay: 0.9 }}
           >
             <div className="bg-muted/30 rounded-2xl p-8">
+              <h3 className="text-2xl font-bold mb-6 flex items-center gap-3">
+                <ShieldCheck className="h-6 w-6 text-primary" />
+                Limitation of Liability
+              </h3>
+              <div className="space-y-4 text-muted-foreground text-sm">
+                <p>
+                  To the maximum extent permitted by applicable law, Dear
+                  Stranger and its operators shall not be liable for any
+                  indirect, incidental, special, consequential, or punitive
+                  damages arising out of or related to your use of the service.
+                </p>
+                <p>
+                  Our total liability for any claim arising from or related to
+                  the service shall not exceed the amount you have paid to us
+                  in the 12 months preceding the claim.
+                </p>
+                <p>
+                  This limitation applies regardless of the legal theory on
+                  which the claim is based, including breach of contract, tort
+                  (including negligence), strict liability, or any other basis.
+                </p>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Governing Law */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.95 }}
+          >
+            <div className="bg-muted/30 rounded-2xl p-8">
               <h3 className="text-2xl font-bold mb-6">
                 Changes to These Terms
               </h3>
@@ -415,11 +609,68 @@ export default function TermsPage() {
             </div>
           </motion.div>
 
+          {/* Related Pages */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 1.05 }}
+          >
+            <div className="bg-muted/30 rounded-2xl p-8">
+              <h3 className="text-2xl font-bold mb-6">Related Policies</h3>
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                <Link
+                  href="/refund-policy"
+                  className="rounded-xl border bg-card p-6 hover:border-primary/50 transition-colors group"
+                >
+                  <h4 className="font-semibold mb-2 group-hover:text-primary transition-colors">
+                    Refund Policy
+                  </h4>
+                  <p className="text-muted-foreground text-sm">
+                    Detailed refund eligibility, timelines, and how to request.
+                  </p>
+                </Link>
+                <Link
+                  href="/cancel-subscription"
+                  className="rounded-xl border bg-card p-6 hover:border-primary/50 transition-colors group"
+                >
+                  <h4 className="font-semibold mb-2 group-hover:text-primary transition-colors">
+                    Cancel Subscription
+                  </h4>
+                  <p className="text-muted-foreground text-sm">
+                    Step-by-step guide to cancel your subscription.
+                  </p>
+                </Link>
+                <Link
+                  href="/privacy"
+                  className="rounded-xl border bg-card p-6 hover:border-primary/50 transition-colors group"
+                >
+                  <h4 className="font-semibold mb-2 group-hover:text-primary transition-colors">
+                    Privacy Policy
+                  </h4>
+                  <p className="text-muted-foreground text-sm">
+                    How we collect, use, and protect your personal data.
+                  </p>
+                </Link>
+                <Link
+                  href="/#pricing"
+                  className="rounded-xl border bg-card p-6 hover:border-primary/50 transition-colors group"
+                >
+                  <h4 className="font-semibold mb-2 group-hover:text-primary transition-colors">
+                    Plans &amp; Pricing
+                  </h4>
+                  <p className="text-muted-foreground text-sm">
+                    View subscription plans and letter pack options.
+                  </p>
+                </Link>
+              </div>
+            </div>
+          </motion.div>
+
           {/* Contact */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 1.0 }}
+            transition={{ duration: 0.5, delay: 1.1 }}
             className="text-center bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5 rounded-2xl p-8"
           >
             <h3 className="text-2xl font-bold mb-4">
