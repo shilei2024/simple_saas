@@ -7,7 +7,8 @@ export type CreemEventType =
   | "subscription.paid"
   | "subscription.expired"
   | "subscription.unpaid"
-  | "subscription.update";
+  | "subscription.update"
+  | "subscription.refunded";
 
 export interface CreemCustomer {
   id: string;
@@ -107,4 +108,19 @@ export interface CreditTransaction {
   creem_order_id?: string;
   created_at: string;
   metadata?: Record<string, any>;
+}
+
+export interface CreemRefund {
+  id: string;
+  object: "refund";
+  order: string | CreemOrder;
+  subscription?: string | CreemSubscription;
+  amount: number;
+  currency: string;
+  reason?: string;
+  status: "pending" | "processing" | "completed" | "failed" | "canceled";
+  created_at: string;
+  updated_at: string;
+  metadata?: Record<string, any>;
+  mode: string;
 }

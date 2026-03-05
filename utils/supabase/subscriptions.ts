@@ -313,3 +313,153 @@ export async function getCreditsHistory(customerId: string) {
   if (error) throw error;
   return data;
 }
+
+/**
+ * Process subscription refund
+ * This function handles subscription refunds by:
+ * 1. Creating a refund record
+ * 2. Calculating prorated refund if needed
+ * 3. Updating subscription status if necessary
+ */
+export async function processSubscriptionRefund(
+  subscriptionId: string,
+  refundData: {
+    creemRefundId: string;
+    creemSubscriptionId: string;
+    refundAmount?: number;
+    refundCurrency?: string;
+    refundReason?: string;
+    refundType: "full" | "partial" | "prorated";
+    periodStart?: string;
+    periodEnd?: string;
+    refundedPeriodDays?: number;
+    metadata?: Record<string, any>;
+  }
+) {
+  const supabase = createServiceRoleClient();
+
+  // Get subscription details
+  const { data: subscription, error: subError } = await supabase
+    .from("subscriptions")
+    .select("*, customers!inner(id, user_id)")
+    .eq("id", subscriptionId)
+    .single();
+
+  if (subError) throw subError;
+  if (!subscription) throw new Error("Subscription not found");
+
+  const customerId = subscription.customer_id as string;
+  const now = new Date().toISOString();
+
+  // Calculate refund period if not provided
+  let periodStart = refundData.periodStart;
+  let periodEnd = refundData.periodEnd;
+  let refundedPeriodDays = refundData.refundedPeriodDays;
+
+  if (!periodStart && subscription.current_period_start) {
+    periodStart = subscription.current_period_start;
+  }
+  if (!periodEnd && subscription.current_period_end) {
+    periodEnd = subscription.current_period_end;
+  }
+
+  if (!refundedPeriodDays && periodStart && periodEnd) {
+    const start = new Date(periodStart);
+    const end = new Date(periodEnd);
+    const nowDate = new Date();
+    const totalDays = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
+    const usedDays = Math.ceil((nowDate.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
+    refundedPeriodDays = Math.max(0, totalDays - usedDays);
+  }
+
+  // Create refund record
+  const { data: refundRecord, error: refundError } = await supabase
+    .from("subscription_refunds")
+    .insert({
+      subscription_id: subscriptionId,
+      customer_id: customerId,
+      creem_refund_id: refundData.creemRefundId,
+      creem_subscription_id: refundData.creemSubscriptionId,
+      refund_amount: refundData.refundAmount || null,
+      refund_currency: refundData.refundCurrency || "USD",
+      refund_reason: refundData.refundReason || null,
+      refund_status: "processing",
+      refund_type: refundData.refundType,
+      period_start: periodStart || null,
+      period_end: periodEnd || null,
+      refunded_period_days: refundedPeriodDays || null,
+      metadata: refundData.metadata || {},
+      created_at: now,
+      updated_at: now,
+    })
+    .select()
+    .single();
+
+  if (refundError) throw refundError;
+
+  // Update refund status to completed
+  const { error: updateError } = await supabase
+    .from("subscription_refunds")
+    .update({
+      refund_status: "completed",
+      updated_at: now,
+    })
+    .eq("id", refundRecord.id);
+
+  if (updateError) throw updateError;
+
+  // Record refund in credits_history for tracking
+  await supabase.from("credits_history").insert({
+    customer_id: customerId,
+    amount: 0, // Subscription refunds don't affect credits directly
+    type: "subtract",
+    description: `Subscription refund processed: ${refundData.refundType} refund`,
+    created_at: now,
+    metadata: {
+      reason: "subscription_refund",
+      creem_refund_id: refundData.creemRefundId,
+      creem_subscription_id: refundData.creemSubscriptionId,
+      subscription_id: subscriptionId,
+      refund_type: refundData.refundType,
+      refund_amount: refundData.refundAmount,
+      refund_currency: refundData.refundCurrency,
+      period_start: periodStart,
+      period_end: periodEnd,
+      refunded_period_days: refundedPeriodDays,
+    },
+  });
+
+  return refundRecord;
+}
+
+/**
+ * Get subscription refunds for a customer
+ */
+export async function getSubscriptionRefunds(customerId: string) {
+  const supabase = createServiceRoleClient();
+
+  const { data, error } = await supabase
+    .from("subscription_refunds")
+    .select("*")
+    .eq("customer_id", customerId)
+    .order("created_at", { ascending: false });
+
+  if (error) throw error;
+  return data;
+}
+
+/**
+ * Get subscription refunds for a subscription
+ */
+export async function getSubscriptionRefundsBySubscription(subscriptionId: string) {
+  const supabase = createServiceRoleClient();
+
+  const { data, error } = await supabase
+    .from("subscription_refunds")
+    .select("*")
+    .eq("subscription_id", subscriptionId)
+    .order("created_at", { ascending: false });
+
+  if (error) throw error;
+  return data;
+}

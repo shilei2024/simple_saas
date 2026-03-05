@@ -1,10 +1,11 @@
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
-import { CreemWebhookEvent, CreemCustomer, CreemSubscription } from "@/types/creem";
+import { CreemWebhookEvent, CreemCustomer, CreemSubscription, CreemRefund } from "@/types/creem";
 import {
   createOrUpdateCustomer,
   createOrUpdateSubscription,
   addCreditsToCustomer,
+  processSubscriptionRefund,
 } from "@/utils/supabase/subscriptions";
 import crypto from "crypto";
 
@@ -55,6 +56,9 @@ export async function POST(request: Request) {
         break;
       case "refund.created":
         await handleRefundCreated(event);
+        break;
+      case "subscription.refunded":
+        await handleSubscriptionRefunded(event);
         break;
       case "subscription.active":
         await handleSubscriptionEvent(event);
@@ -139,14 +143,24 @@ async function handleCheckoutCompleted(event: CreemWebhookEvent) {
 }
 
 async function handleRefundCreated(event: CreemWebhookEvent) {
-  const refund = event.object;
+  const refund = event.object as CreemRefund;
   const refundId = refund?.id || event.id;
   const orderId = resolveOrderId(refund);
+  const subscriptionId = typeof refund?.subscription === "string" 
+    ? refund.subscription 
+    : (refund?.subscription as CreemSubscription)?.id;
 
-  console.log("[Webhook] Processing refund.created:", refundId, "order:", orderId);
+  console.log("[Webhook] Processing refund.created:", refundId, "order:", orderId, "subscription:", subscriptionId);
 
+  // Handle subscription refunds separately
+  if (subscriptionId) {
+    await handleSubscriptionRefundFromRefundEvent(refund, subscriptionId);
+    return;
+  }
+
+  // Handle credit/order refunds
   if (!orderId) {
-    console.warn("[Webhook] refund.created missing order id; skipping");
+    console.warn("[Webhook] refund.created missing order id and subscription id; skipping");
     return;
   }
 
@@ -231,6 +245,142 @@ async function handleRefundCreated(event: CreemWebhookEvent) {
             : "All remaining credits for this order were removed.",
       },
     });
+  }
+}
+
+async function handleSubscriptionRefunded(event: CreemWebhookEvent) {
+  const subscription = event.object as CreemSubscription;
+  const refund = (event.object as any)?.refund as CreemRefund | undefined;
+  
+  console.log("[Webhook] Processing subscription.refunded:", subscription.id);
+
+  if (!subscription.id) {
+    console.warn("[Webhook] subscription.refunded missing subscription id; skipping");
+    return;
+  }
+
+  await handleSubscriptionRefund(subscription, refund);
+}
+
+async function handleSubscriptionRefundFromRefundEvent(
+  refund: CreemRefund,
+  subscriptionId: string
+) {
+  const { createServiceRoleClient } = await import("@/utils/supabase/service-role");
+  const supabase = createServiceRoleClient();
+
+  // Find subscription by creem_subscription_id
+  const { data: subscription, error: subError } = await supabase
+    .from("subscriptions")
+    .select("id")
+    .eq("creem_subscription_id", subscriptionId)
+    .single();
+
+  if (subError || !subscription) {
+    console.warn(`[Webhook] Subscription not found for refund: ${subscriptionId}`);
+    return;
+  }
+
+  // Get subscription details for refund processing
+  const { data: fullSubscription } = await supabase
+    .from("subscriptions")
+    .select("*")
+    .eq("id", subscription.id)
+    .single();
+
+  if (!fullSubscription) {
+    console.warn(`[Webhook] Could not fetch subscription details: ${subscription.id}`);
+    return;
+  }
+
+  await handleSubscriptionRefund(
+    { id: subscriptionId } as CreemSubscription,
+    refund,
+    fullSubscription
+  );
+}
+
+async function handleSubscriptionRefund(
+  subscription: CreemSubscription | { id: string },
+  refund?: CreemRefund,
+  dbSubscription?: any
+) {
+  const { createServiceRoleClient } = await import("@/utils/supabase/service-role");
+  const supabase = createServiceRoleClient();
+
+  const subscriptionId = subscription.id;
+
+  // Get subscription from database if not provided
+  if (!dbSubscription) {
+    const { data: sub, error: subError } = await supabase
+      .from("subscriptions")
+      .select("*")
+      .eq("creem_subscription_id", subscriptionId)
+      .single();
+
+    if (subError || !sub) {
+      console.warn(`[Webhook] Subscription not found: ${subscriptionId}`);
+      return;
+    }
+    dbSubscription = sub;
+  }
+
+  const refundId = refund?.id || `refund_${Date.now()}`;
+  const refundAmount = refund?.amount;
+  const refundCurrency = refund?.currency || "USD";
+  const refundReason = refund?.reason;
+  
+  // Determine refund type
+  let refundType: "full" | "partial" | "prorated" = "full";
+  if (refund?.metadata?.refund_type) {
+    refundType = refund.metadata.refund_type;
+  } else if (refundAmount && dbSubscription.metadata?.price) {
+    const subscriptionPrice = Number(dbSubscription.metadata.price) || 0;
+    if (refundAmount < subscriptionPrice) {
+      refundType = "partial";
+    }
+  }
+
+  // Calculate period information
+  const periodStart = dbSubscription.current_period_start;
+  const periodEnd = dbSubscription.current_period_end;
+  const now = new Date();
+  const periodStartDate = periodStart ? new Date(periodStart) : now;
+  const periodEndDate = periodEnd ? new Date(periodEnd) : now;
+  
+  let refundedPeriodDays: number | undefined;
+  if (periodStart && periodEnd) {
+    const totalDays = Math.ceil(
+      (periodEndDate.getTime() - periodStartDate.getTime()) / (1000 * 60 * 60 * 24)
+    );
+    const usedDays = Math.ceil(
+      (now.getTime() - periodStartDate.getTime()) / (1000 * 60 * 60 * 24)
+    );
+    refundedPeriodDays = Math.max(0, totalDays - usedDays);
+  }
+
+  try {
+    await processSubscriptionRefund(dbSubscription.id, {
+      creemRefundId: refundId,
+      creemSubscriptionId: subscriptionId,
+      refundAmount: refundAmount ? Number(refundAmount) / 100 : undefined, // Convert cents to dollars
+      refundCurrency,
+      refundReason,
+      refundType,
+      periodStart: periodStart || undefined,
+      periodEnd: periodEnd || undefined,
+      refundedPeriodDays,
+      metadata: {
+        creem_refund: refund,
+        subscription_status: dbSubscription.status,
+        processed_at: new Date().toISOString(),
+      },
+    });
+
+    console.log(`[Webhook] Successfully processed subscription refund: ${refundId}`);
+  } catch (error) {
+    console.error(`[Webhook] Error processing subscription refund:`, error);
+    throw error;
   }
 }
 
