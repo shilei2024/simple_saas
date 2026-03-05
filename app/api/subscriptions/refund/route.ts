@@ -31,13 +31,17 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: "Customer not found" }, { status: 404 });
     }
 
-    // Get subscription_id from query params if provided
+    // Get subscription_id or customer_id from query params if provided
     const { searchParams } = new URL(request.url);
     const subscriptionId = searchParams.get("subscription_id");
+    const customerIdParam = searchParams.get("customer_id");
 
     let refunds;
     if (subscriptionId) {
       refunds = await getSubscriptionRefundsBySubscription(subscriptionId);
+    } else if (customerIdParam && customerIdParam === customer.id) {
+      // Allow customer_id parameter for convenience
+      refunds = await getSubscriptionRefunds(customerIdParam);
     } else {
       refunds = await getSubscriptionRefunds(customer.id);
     }

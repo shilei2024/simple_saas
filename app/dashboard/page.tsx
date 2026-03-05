@@ -2,7 +2,7 @@ import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
 import { SubscriptionStatusCard } from "@/components/dashboard/subscription-status-card";
 import { CreditsBalanceCard } from "@/components/dashboard/credits-balance-card";
-import { Mail, PenLine, Clock, Sparkles } from "lucide-react";
+import { Mail, PenLine, Clock, Sparkles, CreditCard } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
@@ -114,6 +114,25 @@ export default async function DashboardPage() {
           recentHistory={recentCreditsHistory}
         />
         <SubscriptionStatusCard subscription={subscription} />
+        <div className="rounded-xl border bg-card p-6">
+          <div className="flex items-center gap-4 mb-4">
+            <div className="p-2 bg-primary/10 rounded-lg">
+              <CreditCard className="h-6 w-6 text-primary" />
+            </div>
+            <div>
+              <h3 className="font-semibold">Billing & Subscription</h3>
+              <p className="text-sm text-muted-foreground">
+                Manage your plan and payments
+              </p>
+            </div>
+          </div>
+          <Button asChild variant="outline" className="w-full">
+            <Link href="/dashboard/billing">
+              <CreditCard className="h-4 w-4 mr-2" />
+              Manage Billing
+            </Link>
+          </Button>
+        </div>
       </div>
 
       {/* Write a Letter CTA */}
